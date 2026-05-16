@@ -9,6 +9,7 @@ import 'tasks_screen.dart';
 import 'attendance_screen.dart';
 import 'planner_screen.dart';
 import 'progress_screen.dart';
+import 'login_screen.dart';
 
 /// Home screen - main dashboard of the app
 class HomeScreen extends StatefulWidget {
@@ -43,11 +44,15 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   /// Logout - clear saved data
-  Future<void> _logout() async {
+ Future<void> _logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
     if (!mounted) return;
-    Navigator.pushReplacementNamed(context, '/');
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      (route) => false,
+    );
   }
 
   @override
