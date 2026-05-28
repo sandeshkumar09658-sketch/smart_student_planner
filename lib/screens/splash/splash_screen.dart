@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../home_screen.dart';
-import '../login_screen.dart';
+import '../../presentation/screens/home/home_screen.dart';
+import '../auth/login_screen.dart';
 
 /// Splash screen - shown when app first launches
 /// Checks login status and routes accordingly
@@ -36,17 +36,17 @@ class _SplashScreenState extends State<SplashScreen>
     // Logo animation
     _logoController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 900),
+      duration: const Duration(milliseconds: 500),
     );
     _logoScale = Tween<double>(begin: 0.3, end: 1.0).animate(
-      CurvedAnimation(parent: _logoController, curve: Curves.elasticOut));
+      CurvedAnimation(parent: _logoController, curve: Curves.easeOutBack));
     _logoOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _logoController, curve: Curves.easeIn));
 
     // Text animation
     _textController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 700),
+      duration: const Duration(milliseconds: 400),
     );
     _textSlide = Tween<Offset>(
       begin: const Offset(0, 0.5), end: Offset.zero,
@@ -56,7 +56,7 @@ class _SplashScreenState extends State<SplashScreen>
     // Progress animation
     _progressController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 2000),
+      duration: const Duration(milliseconds: 1000),
     );
     _progressValue = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _progressController, curve: Curves.easeInOut));
@@ -64,33 +64,36 @@ class _SplashScreenState extends State<SplashScreen>
 
   /// Run animations in sequence then navigate
   Future<void> _startSequence() async {
-    await Future.delayed(const Duration(milliseconds: 200));
+    await Future.delayed(const Duration(milliseconds: 100));
     _logoController.forward();
 
-    await Future.delayed(const Duration(milliseconds: 600));
+    await Future.delayed(const Duration(milliseconds: 400));
     _textController.forward();
 
-    await Future.delayed(const Duration(milliseconds: 300));
+    await Future.delayed(const Duration(milliseconds: 200));
     _progressController.forward();
 
-    await Future.delayed(const Duration(milliseconds: 2200));
+    await Future.delayed(const Duration(milliseconds: 1200));
     _navigate();
   }
 
-  /// Check login and navigate to correct screen
   Future<void> _navigate() async {
-    final prefs = await SharedPreferences.getInstance();
-    final name  = prefs.getString('student_name');
     if (!mounted) return;
 
-    Navigator.pushReplacement(
+    final prefs = await SharedPreferences.getInstance();
+    final name = prefs.getString('student_name');
+    final isLoggedIn = name != null && name.isNotEmpty;
+
+    final Widget destination = isLoggedIn ? const MainShell() : const LoginScreen();
+
+    if (!mounted) return;
+    await Navigator.pushReplacement(
       context,
       PageRouteBuilder(
-        pageBuilder: (_, __, ___) =>
-            name != null ? const HomeScreen() : const LoginScreen(),
+        pageBuilder: (_, __, ___) => destination,
         transitionsBuilder: (_, anim, __, child) =>
             FadeTransition(opacity: anim, child: child),
-        transitionDuration: const Duration(milliseconds: 600),
+        transitionDuration: const Duration(milliseconds: 300),
       ),
     );
   }
@@ -136,7 +139,7 @@ class _SplashScreenState extends State<SplashScreen>
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
                     colors: [
-                      const Color(0xFF6C63FF).withOpacity(0.3),
+                      const Color(0xFF6C63FF).withValues(alpha: 0.3),
                       Colors.transparent,
                     ],
                   ),
@@ -153,7 +156,7 @@ class _SplashScreenState extends State<SplashScreen>
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
                     colors: [
-                      const Color(0xFFFF6584).withOpacity(0.25),
+                      const Color(0xFFFF6584).withValues(alpha: 0.25),
                       Colors.transparent,
                     ],
                   ),
@@ -170,7 +173,7 @@ class _SplashScreenState extends State<SplashScreen>
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
                     colors: [
-                      const Color(0xFF00D2D3).withOpacity(0.2),
+                      const Color(0xFF00D2D3).withValues(alpha: 0.2),
                       Colors.transparent,
                     ],
                   ),
@@ -206,7 +209,7 @@ class _SplashScreenState extends State<SplashScreen>
                             borderRadius: BorderRadius.circular(32),
                             boxShadow: [
                               BoxShadow(
-                                color: const Color(0xFF6C63FF).withOpacity(0.5),
+                                color: const Color(0xFF6C63FF).withValues(alpha: 0.5),
                                 blurRadius: 30,
                                 spreadRadius: 5,
                               ),
@@ -258,7 +261,7 @@ class _SplashScreenState extends State<SplashScreen>
                             ),
                             const SizedBox(height: 12),
                             const Text(
-                              'Manage • Track • Succeed',
+                              'Manage - Track - Succeed',
                               style: TextStyle(
                                 color: Colors.white38,
                                 fontSize: 14,
@@ -322,7 +325,7 @@ class _SplashScreenState extends State<SplashScreen>
                           style: TextStyle(
                               color: Colors.white24, fontSize: 11)),
                       SizedBox(height: 4),
-                      Text('Made with ❤️ for Students',
+                      Text('Made for Students',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                               color: Colors.white24, fontSize: 11)),
@@ -342,7 +345,7 @@ class _SplashScreenState extends State<SplashScreen>
     if (progress < 0.3) return 'Loading your data...';
     if (progress < 0.6) return 'Setting up your planner...';
     if (progress < 0.9) return 'Almost ready...';
-    return 'Welcome! 🎓';
+    return 'Welcome!';
   }
 
   /// Build floating decorative dots
@@ -367,7 +370,7 @@ class _SplashScreenState extends State<SplashScreen>
           height: d[2] as double,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: Color((d[3] as double).toInt()).withOpacity(0.6),
+            color: Color((d[3] as double).toInt()).withValues(alpha: 0.6),
           ),
         ),
       );
